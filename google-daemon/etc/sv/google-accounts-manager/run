@@ -1,0 +1,53 @@
+#! /bin/sh
+# Copyright 2013 Google Inc. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+#     Unless required by applicable law or agreed to in writing, software
+#     distributed under the License is distributed on an "AS IS" BASIS,
+#     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#     See the License for the specific language governing permissions and
+#     limitations under the License.
+#
+
+# DESC="Google Compute Engine accounts manager service"
+# NAME=manage_accounts
+
+DAEMON=/usr/share/google/google_daemon/manage_accounts.py
+DAEMON_ARGS="--daemon"
+
+# Exit if the package is not installed
+[ -x "$DAEMON" ] || exit 0
+
+# Read configuration variable file if it is present
+[ -r conf ] && . ./conf
+
+#
+# runit 'run' files seems to just have a start line
+#
+do_start()
+{
+  # One-shot run prior to daemonizing.
+  $DAEMON --single-pass
+
+  # In case of power outage or hard reboot, ensure that SSH keys have been
+  # written to disk before starting the daemon. At this point the other
+  # Google-specific startup logic will have already occurred, sometimes
+  # including other steps which would be good to write to disk; since syncs are
+  # expensive and we don't want to do it twice during boot, just do it once
+  # here.
+  sync
+
+  # Return
+  #   0 if daemon has been started
+  #   1 if daemon was already running
+  #   2 if daemon could not be started
+  exec $DAEMON --test > /dev/null || return 1
+  exec $DAEMON -- $DAEMON_ARGS || return 2
+}
+
+do_start
