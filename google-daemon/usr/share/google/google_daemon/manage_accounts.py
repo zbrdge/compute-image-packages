@@ -48,7 +48,9 @@ def Main(accounts, desired_accounts, system, logger,
       log_handler = system.MakeLoggingHandler(
         'accounts-from-metadata', logging.handlers.SysLogHandler.LOG_AUTH)
     except:
-      log_handler = logging.RotatingFileHandler("/var/log/google-accounts-manager", maxBytes=1024*1024*100, backupCount=1)
+      log_handler = logging.handlers.RotatingFileHandler(
+        '/var/log/google-accounts-manager', maxBytes=1024*1024*100,
+        backupCount=1)
 
   system.SetLoggingHandler(logger, log_handler)
 
