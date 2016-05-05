@@ -36,9 +36,14 @@ LOCKFILE = '/var/lock/google-address-manager.lock'
 
 def Main(system=System(), logger=logging.getLogger(), log_handler=None,
          lock_file=LockFile(), lock_fname=None):
+
   if not log_handler:
-    log_handler = system.MakeLoggingHandler(
+    try:
+      log_handler = system.MakeLoggingHandler(
         'google-address-manager', logging.handlers.SysLogHandler.LOG_SYSLOG)
+    except:
+      log_handler = logging.RotatingFileHandler("/var/log/google-address-manager", maxBytes=1024*1024*100, backupCount=1)
+
   system.SetLoggingHandler(logger, log_handler)
   logging.info('Starting GCE address manager')
 

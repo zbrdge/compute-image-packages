@@ -69,11 +69,16 @@ def OnChange(event):
 
 def Main(system=System(), logger=logging.getLogger(), log_handler=None,
          lock_file=LockFile(), lock_fname=None):
+
   if not log_handler:
-    log_handler = system.MakeLoggingHandler(
+    try:
+      log_handler = system.MakeLoggingHandler(
         'google-clock-sync', logging.handlers.SysLogHandler.LOG_SYSLOG)
-    system.SetLoggingHandler(logger, log_handler)
-    logging.info('Starting GCE clock sync')
+    except:
+      log_handler = logging.RotatingFileHandler("/var/log/google-clock-sync-manager", maxBytes=1024*1024*100, backupCount=1)
+
+  system.SetLoggingHandler(logger, log_handler)
+  logging.info('Starting GCE clock sync')
 
   if not lock_fname:
     lock_fname = LOCKFILE
