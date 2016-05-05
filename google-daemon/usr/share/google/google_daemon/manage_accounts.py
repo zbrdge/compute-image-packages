@@ -71,6 +71,7 @@ if __name__ == '__main__':
   parser = optparse.OptionParser()
   parser.add_option('--daemon', dest='daemon', action='store_true')
   parser.add_option('--no-daemon', dest='daemon', action='store_false')
+  parser.add_option('--stderr', dest='err_logger', action='store_true')
   # Leaving --interval flag for now to allow some time for each platform to move to
   # new flag
   parser.add_option('--interval', type='int', dest='interval')
@@ -83,12 +84,18 @@ if __name__ == '__main__':
   parser.set_defaults(daemon=False)
   parser.set_defaults(force=False)
   parser.set_defaults(debug=False)
+  parser.set_defaults(err_logger=False)
   (options, args) = parser.parse_args()
 
   # set single_pass to True if interval is -1.
   if options.interval == -1:
     options.single_pass = True
 
+  if options.err_logger:
+    log_handler = logging.StreamHandler() # log to stderr if specified
+  else:
+    log_handler = logging.getLogger() # else use syslog
+
   Main(Accounts(system_module=System()), DesiredAccounts(),
-       System(), logging.getLogger(), None, LockFile(), None, options.single_pass,
+       System(), log_handler, None, LockFile(), None, options.single_pass,
        options.daemon, options.force, options.debug)
